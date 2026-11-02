@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATA_DIR: /archive
+      HTTPS_ONLY: '1'
+      SECRET_KEY: ${SECRET_KEY:?Set a long random SECRET_KEY in .env}
+      STORAGE_LIMIT_GB: ${STORAGE_LIMIT_GB:-100}
+    volumes:
+      - ./data:/archive
+  web:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    environment:
+      DOMAIN: ${DOMAIN:?Set your domain in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on: [app]
+volumes:
+  caddy_data:
+  caddy_config:
